@@ -23,7 +23,7 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-const { DB_URL, PORT } = process.env; //DB_URL= 'mongodb+srv://serhiikysil10:98987858@cluster0.z8zwk5c.mongodb.net/db-contacts' , 4000
+const { DB_URL, PORT } = process.env;
 
 mongoose
   .connect(DB_URL)
