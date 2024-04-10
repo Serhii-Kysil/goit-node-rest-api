@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import "dotenv/config";
 
-import * as authServices from "../services/authServices.js";
 import * as userServices from "../services/userServices.js";
 
 import HttpError from "../helpers/HttpError.js";
@@ -16,7 +16,7 @@ export const signup = async (req, res, next) => {
       throw HttpError(409, "Email already in use");
     }
 
-    const newUser = await authServices.signup(req.body);
+    const newUser = await userServices.signup(req.body);
 
     res.status(201).json({
       email: newUser.email,
@@ -44,7 +44,7 @@ export const signin = async (req, res, next) => {
     };
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "23h" });
-    await authServices.setToken(user._id, token);
+    await userServices.setToken(user._id, token);
 
     res.json({
       token,
@@ -71,7 +71,7 @@ export const getCurrent = async (req, res, next) => {
 export const signout = async (req, res, next) => {
   try {
     const { _id } = req.user;
-    await authServices.setToken(_id);
+    await userServices.setToken(_id);
 
     res.json({
       message: "Signout success",

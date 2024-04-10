@@ -1,12 +1,11 @@
 import jwt from "jsonwebtoken";
-
+import "dotenv/config";
 import { findUserById } from "../services/userServices.js";
-
 import HttpError from "../helpers/HttpError.js";
 
 const { JWT_SECRET } = process.env;
 
-const authtenticate = async (req, res, next) => {
+export const authorize = async (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization) {
@@ -30,5 +29,3 @@ const authtenticate = async (req, res, next) => {
     next(HttpError(401, error.message));
   }
 };
-
-export default authtenticate;

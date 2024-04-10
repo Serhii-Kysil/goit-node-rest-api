@@ -5,9 +5,9 @@ import {
   signin,
   getCurrent,
   signout,
-} from "../controllers/authController.js";
+} from "../controllers/userController.js";
 
-import authtenticate from "../middlewares/authenticate.js";
+import { authorize } from "../middlewares/authorize.js";
 
 const authRouter = express.Router();
 
@@ -15,8 +15,8 @@ authRouter.post("/register", signup);
 
 authRouter.post("/login", signin);
 
-authRouter.get("/current", authtenticate, getCurrent);
+authRouter.get("/current", authorize, getCurrent);
 
-authRouter.post("/logout", authtenticate, signout);
+authRouter.post("/logout", authorize, signout);
 
 export default authRouter;
