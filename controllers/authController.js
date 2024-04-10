@@ -32,11 +32,11 @@ export const signin = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await userServices.findUser({ email });
     if (!user) {
-      throw HttpError(401, "Email or password invalid"); // "Email invalid"
+      throw HttpError(401, "Email or password invalid");
     }
     const passwordCompare = await bcrypt.compare(password, user.password);
     if (!passwordCompare) {
-      throw HttpError(401, "Email or password invalid"); // "Password invalid"
+      throw HttpError(401, "Email or password invalid");
     }
 
     const payload = {
