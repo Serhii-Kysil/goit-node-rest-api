@@ -4,6 +4,7 @@ import "dotenv/config";
 import gravatar from "gravatar";
 import Jimp from "jimp";
 import path from "path";
+import { promises as fs } from "fs";
 
 import * as userServices from "../services/userServices.js";
 
@@ -90,14 +91,25 @@ export const signout = async (req, res, next) => {
 };
 
 const dir = path.resolve("public", "avatars");
-
-//     User.avaterURL = file.path.replace("public", "");
 export const updateAvatar = async (req, res, next) => {
   try {
     const { _id } = req.user;
-    const { path: oldPath, filename } = req.file;
+    const { path: filePath, filename } = req.file;
 
-    Jimp.read(oldPath, (err, lenna) => {
+    //Отримання і вдалення старої аватарки
+    const currentUser = await userServices.findUserById(_id);
+    const oldAvatarPath = path.resolve(
+      "public",
+      currentUser.avatarURL.slice(1)
+    );
+    try {
+      await fs.unlink(oldAvatarPath);
+    } catch (error) {
+      console.error(error.message);
+    }
+    //
+
+    Jimp.read(filePath, (err, lenna) => {
       if (err) throw err;
       lenna.resize(250, 250).write(`${dir}/${filename}`);
     });
