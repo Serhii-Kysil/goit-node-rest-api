@@ -1,12 +1,19 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
+import gravatar from "gravatar";
+import Jimp from "jimp";
+import path from "path";
 
 import * as userServices from "../services/userServices.js";
 
 import HttpError from "../helpers/HttpError.js";
 
 const { JWT_SECRET } = process.env;
+
+const options = {
+  default: "404",
+};
 
 export const signup = async (req, res, next) => {
   try {
@@ -16,7 +23,8 @@ export const signup = async (req, res, next) => {
       throw HttpError(409, "Email already in use");
     }
 
-    const newUser = await userServices.signup(req.body);
+    const avatarURL = gravatar.url(email, options);
+    const newUser = await userServices.signup(req.body, avatarURL);
 
     res.status(201).json({
       email: newUser.email,
@@ -57,7 +65,7 @@ export const signin = async (req, res, next) => {
 
 export const getCurrent = async (req, res, next) => {
   try {
-    const { email, subscription } = req.user;
+    const { email, subscription, avatarURL } = req.user;
 
     res.json({
       email,
@@ -76,6 +84,27 @@ export const signout = async (req, res, next) => {
     res.json({
       message: "Signout success",
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const dir = path.resolve("public", "avatars");
+
+//     User.avaterURL = file.path.replace("public", "");
+export const updateAvatar = async (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const { path: oldPath, filename } = req.file;
+
+    Jimp.read(oldPath, (err, lenna) => {
+      if (err) throw err;
+      lenna.resize(250, 250).write(`${dir}/${filename}`);
+    });
+    const avatarURL = `/avatars/${filename}`;
+
+    await userServices.updateAvatar(_id, avatarURL);
+    res.json({ avatarURL });
   } catch (error) {
     next(error);
   }
