@@ -6,21 +6,27 @@ import {
   getCurrent,
   signout,
   updateAvatar,
+  verify,
+  resendVerify,
 } from "../controllers/userController.js";
 
 import { authorize } from "../middlewares/authorize.js";
 import { uploadAvatar } from "../middlewares/uploadAvatar.js";
 
-const authRouter = express.Router();
+const userRouter = express.Router();
 
-authRouter.post("/register", signup);
+userRouter.post("/register", signup);
 
-authRouter.post("/login", signin);
+userRouter.post("/login", signin);
 
-authRouter.get("/current", authorize, getCurrent);
+userRouter.get("/current", authorize, getCurrent);
 
-authRouter.post("/logout", authorize, signout);
+userRouter.post("/logout", authorize, signout);
 
-authRouter.patch("/avatars", authorize, uploadAvatar, updateAvatar);
+userRouter.get("/verify/:verificationToken", verify);
 
-export default authRouter;
+userRouter.get("/verify", resendVerify);
+
+userRouter.patch("/avatars", authorize, uploadAvatar, updateAvatar);
+
+export default userRouter;

@@ -5,12 +5,15 @@ import gravatar from "gravatar";
 import Jimp from "jimp";
 import path from "path";
 import { promises as fs } from "fs";
+import { nanoid } from "nanoid";
+import sgMail from "@sendgrid/mail";
 
 import * as userServices from "../services/userServices.js";
 
 import HttpError from "../helpers/HttpError.js";
+import { sendEmail } from "../helpers/sendEmail.js";
 
-const { JWT_SECRET } = process.env;
+const { JWT_SECRET, BASE_URL } = process.env;
 
 const options = {
   default: "404",
@@ -20,17 +23,83 @@ export const signup = async (req, res, next) => {
   try {
     const { email } = req.body;
     const user = await userServices.findUser({ email });
+
     if (user) {
       throw HttpError(409, "Email already in use");
     }
+    const verificationToken = nanoid();
 
     const avatarURL = gravatar.url(email, options);
-    const newUser = await userServices.signup(req.body, avatarURL);
+    const newUser = await userServices.signup(
+      req.body,
+      avatarURL,
+      verificationToken
+    );
+
+    //
+    const msg = {
+      to: email,
+      from: "serhii.kysil10@gmail.com",
+      subject: "Verify email",
+      html: `<a target="_blank"  href='${BASE_URL}/api/users/verify/${verificationToken}'>CLick to verify email </a>`,
+    };
+
+    await sendEmail(msg);
 
     res.status(201).json({
       email: newUser.email,
       subscription: newUser.subscription,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verify = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await userServices.findUser({ verificationToken });
+
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    await userServices.updateVerify(user._id);
+
+    res.json({
+      message: "Verification successful",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendVerify = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw HttpError(400, "missing required field email");
+    }
+
+    const user = await userServices.findUser({ email });
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    if (user.verify) {
+      throw HttpError(400, "Verification has already been passed");
+    }
+
+    const msg = {
+      to: email,
+      from: "serhii.kysil10@gmail.com",
+      subject: "Verify email",
+      html: `<a target="_blank"  href='${BASE_URL}/api/users/verify/${verificationToken}'>CLick to verify email </a>`,
+    };
+    res.json({
+      message: "Verification email sent",
+    });
+    await sendEmail(msg);
   } catch (error) {
     next(error);
   }
