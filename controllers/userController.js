@@ -77,10 +77,6 @@ export const verify = async (req, res, next) => {
 export const resendVerify = async (req, res, next) => {
   try {
     const { email } = req.body;
-    if (!email) {
-      throw HttpError(400, "missing required field email");
-    }
-
     const user = await userServices.findUser({ email });
     if (!user) {
       throw HttpError(404, "User not found");
@@ -89,6 +85,7 @@ export const resendVerify = async (req, res, next) => {
     if (user.verify) {
       throw HttpError(400, "Verification has already been passed");
     }
+    const { verificationToken } = user;
 
     const msg = {
       to: email,
@@ -96,10 +93,10 @@ export const resendVerify = async (req, res, next) => {
       subject: "Verify email",
       html: `<a target="_blank"  href='${BASE_URL}/api/users/verify/${verificationToken}'>CLick to verify email </a>`,
     };
+    await sendEmail(msg);
     res.json({
       message: "Verification email sent",
     });
-    await sendEmail(msg);
   } catch (error) {
     next(error);
   }
@@ -159,9 +156,9 @@ export const signout = async (req, res, next) => {
   }
 };
 
-const dir = path.resolve("public", "avatars");
 export const updateAvatar = async (req, res, next) => {
   try {
+    const dir = path.resolve("public", "avatars");
     const { _id } = req.user;
     const { path: filePath, filename } = req.file;
 

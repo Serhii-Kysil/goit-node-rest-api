@@ -12,6 +12,7 @@ import {
 
 import { authorize } from "../middlewares/authorize.js";
 import { uploadAvatar } from "../middlewares/uploadAvatar.js";
+import { updateBody } from "../middlewares/updateBody.js";
 
 const userRouter = express.Router();
 
@@ -25,7 +26,7 @@ userRouter.post("/logout", authorize, signout);
 
 userRouter.get("/verify/:verificationToken", verify);
 
-userRouter.get("/verify", resendVerify);
+userRouter.get("/verify", updateBody, resendVerify);
 
 userRouter.patch("/avatars", authorize, uploadAvatar, updateAvatar);
 

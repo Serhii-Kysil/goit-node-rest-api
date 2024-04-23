@@ -11,13 +11,13 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 //   html: "<strong>and easy to do anywhere, even with Node.js</strong>",
 // };
 
-export const sendEmail = (msg) => {
+export const sendEmail = async (msg) => {
   sgMail
     .send(msg)
     .then(() => {
-      console.log("Email sent");
+      resolve();
     })
     .catch((error) => {
-      console.error(error);
+      reject(error);
     });
 };
