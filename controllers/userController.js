@@ -114,6 +114,13 @@ export const signin = async (req, res, next) => {
       throw HttpError(401, "Email or password invalid");
     }
 
+    if (!user.verify) {
+      throw HttpError(
+        403,
+        "Your account is not verified. Please check your email for verification."
+      );
+    }
+
     const payload = {
       id: user._id,
     };
